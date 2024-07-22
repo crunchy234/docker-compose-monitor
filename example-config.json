@@ -2,5 +2,9 @@
   "compose_name": "docker-compose-monitor",
   "docker_base_url": "unix://$HOME/.docker/run/docker.sock",
   "alert_url": "https://my-alert-service.com:8000/alert",
-  "retries": 1
+  "retries": 1,
+  "container_retries": {
+    "crashing_container": 1,
+    "psql_unhealthy": 10
+  }
 }

@@ -13,6 +13,7 @@ from docker.errors import DockerException
 from docker.models.containers import Container
 from pydantic import BaseModel, Field, HttpUrl
 from pydantic_cli import DefaultConfig, run_and_exit
+from requests import ReadTimeout
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +60,7 @@ class DockerMonitorOptions(BaseModel):
         description=f"If there are no containers found continue to monitor",
         cli=("-n", "--no-containers-continue")
     )
+    container_retries: dict[str, int] = Field(None, description="Retry configuration for individual containers")
 
 
 @unique
@@ -116,7 +118,7 @@ Error message: {current_stats.error_message}
         response = requests.post(url=config.alert_url, json=body, timeout=config.timeout)
         if response.status_code != 200:
             log.warning(f"Error sending alert: {response.text}")
-    except ConnectionError as e:
+    except (ConnectionError, ReadTimeout) as e:
         log.error(f'Error sending alert to {config.alert_url}. Error debug: {e}')
 
 
@@ -157,7 +159,13 @@ def monitor(config: DockerMonitorOptions) -> int:
 
                 current_stats.status = current_status
 
-                if current_stats.sequential_error_count % config.retries == 0:
+                retries_key = [key for key in config.container_retries.keys() if key in container.name]
+                if len(retries_key) > 0:
+                    retries = config.container_retries.get(retries_key[0], config.retries)
+                else:
+                    retries = config.retries
+
+                if current_stats.sequential_error_count % retries == 0:
                     log.info(f"Alerting now for {container.name}")
                     send_alert(config, current_stats)
                 container_stats[container.name] = current_stats
