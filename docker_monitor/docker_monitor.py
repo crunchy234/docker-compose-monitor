@@ -54,6 +54,11 @@ class DockerMonitorOptions(BaseModel):
         description=f"The wait time in seconds",
         cli=("-w", "--wait")
     )
+    no_containers_continue: bool = Field(
+        False,
+        description=f"If there are no containers found continue to monitor",
+        cli=("-n", "--no-containers-continue")
+    )
 
 
 @unique
@@ -135,7 +140,11 @@ def monitor(config: DockerMonitorOptions) -> int:
         while True:
             containers = client.containers.list(all=True,
                                                 filters={"label": f"com.docker.compose.project={config.compose_name}"})
-
+            if len(containers) == 0:
+                if not config.no_containers_continue:
+                    print("No containers found. Exiting...")
+                    break
+                log.warning("No containers found")
             for container in containers:
                 current_stats = container_stats.get(container.name,
                                                     ContainerStats(name=container.name, status=Status.Unknown))
