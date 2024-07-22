@@ -3,6 +3,7 @@
 
 .idea/*
 .local-pg-password.txt
+config.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
