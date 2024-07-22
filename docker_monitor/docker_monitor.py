@@ -114,7 +114,7 @@ Error message: {current_stats.error_message}
 
 
 def monitor(config: DockerMonitorOptions) -> int:
-    pprint(f"Running with config: {config}")
+    log.debug(f"Running with config: {config}")
     docker_base_url = config.docker_base_url
     try:
         docker_base_url = os.path.expandvars(os.path.expanduser(docker_base_url))
