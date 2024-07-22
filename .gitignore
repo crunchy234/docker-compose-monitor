@@ -2,6 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 .idea/*
+.local-pg-password.txt
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

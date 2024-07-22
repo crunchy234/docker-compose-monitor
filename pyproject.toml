@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "docker_monitor"
+version = "0.1.0"
+authors = [
+    { name="crunchy234", email="6490077+crunchy234@users.noreply.github.com" },
+]
+description = "Monitors a docker container or docker compose script and alerts on errors"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pydantic<2",
+    "pydantic-cli==4.3.0",
+    "docker==7.1.0",
+    "requests==2.32.3"
+]
+
+[project.optional-dependencies]
+"dev"= [
+    "black==24.4.2",
+    "pytest==8.3.1",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/my_awesome_module"
+"Bug Tracker" = "https://github.com/yourusername/my_awesome_module/issues"
+
+[project.scripts]
+dockermon="docker_monitor.docker_monitor:main"
+
+[tool.setuptools]
+packages = ["docker_monitor"]  # List the package(s) in your module
