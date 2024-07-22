@@ -6,7 +6,6 @@ import os.path
 import time
 from dataclasses import dataclass
 from enum import Enum, unique
-from pprint import pprint
 
 import docker
 import requests
@@ -99,7 +98,7 @@ def send_alert(config: DockerMonitorOptions, current_stats: ContainerStats) -> N
     body = {
         'text': f"""
 Container {short_name} is {current_stats.status.name}
-This has been in error for at least {config.wait*current_stats.sequential_error_count:.2f} seconds.
+This has been in error for at least {config.wait * current_stats.sequential_error_count:.2f} seconds.
 
 Error message: {current_stats.error_message}
 """,
@@ -108,9 +107,12 @@ Error message: {current_stats.error_message}
         # Make sure we set the title of the notification in pushcut
         body['title'] = f"Container {short_name} is {current_stats.status.name}"
 
-    response = requests.post(url=config.alert_url, json=body, timeout=config.timeout)
-    if response.status_code != 200:
-        log.warning(f"Error sending alert: {response.text}")
+    try:
+        response = requests.post(url=config.alert_url, json=body, timeout=config.timeout)
+        if response.status_code != 200:
+            log.warning(f"Error sending alert: {response.text}")
+    except ConnectionError as e:
+        log.error(f'Error sending alert to {config.alert_url}. Error debug: {e}')
 
 
 def monitor(config: DockerMonitorOptions) -> int:

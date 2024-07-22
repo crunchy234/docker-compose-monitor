@@ -1,0 +1,6 @@
+{
+  "compose_name": "docker-compose-monitor",
+  "docker_base_url": "unix://$HOME/.docker/run/docker.sock",
+  "alert_url": "https://my-alert-service.com:8000/alert",
+  "retries": 1
+}
