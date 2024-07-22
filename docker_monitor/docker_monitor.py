@@ -10,6 +10,7 @@ from pprint import pprint
 
 import docker
 import requests
+from docker.errors import DockerException
 from docker.models.containers import Container
 from pydantic import BaseModel, Field, HttpUrl
 from pydantic_cli import DefaultConfig, run_and_exit
@@ -98,6 +99,7 @@ def send_alert(config: DockerMonitorOptions, current_stats: ContainerStats) -> N
     body = {
         'text': f"""
 Container {short_name} is {current_stats.status.name}
+This has been in error for at least {config.wait*current_stats.sequential_error_count:.2f} seconds.
 
 Error message: {current_stats.error_message}
 """,
@@ -121,18 +123,21 @@ def monitor(config: DockerMonitorOptions) -> int:
         log.error(f"Failed to get base url: {e}")
 
     try:
+        client = docker.DockerClient(base_url=docker_base_url)
+    except DockerException as e:
+        log.error(f"Failed to connect to docker server: {e}")
+        print(f"Please ensure your docker daemon is running and connectable through {config.docker_base_url}")
+        return 1
+    try:
         while True:
-            client = docker.DockerClient(base_url=docker_base_url)
             containers = client.containers.list(all=True,
                                                 filters={"label": f"com.docker.compose.project={config.compose_name}"})
 
             container_stats = {}
 
             for container in containers:
-                if container.name in container_stats.keys():
-                    current_stats = container_stats[container.name]
-                else:
-                    current_stats = ContainerStats(name=container.name, status=Status.Unknown)
+                current_stats = container_stats.get(container.name,
+                                                    ContainerStats(name=container.name, status=Status.Unknown))
 
                 current_status = Status.from_docker_status(container)
                 if current_status != Status.CleanExit and current_stats != Status.Healthy:
