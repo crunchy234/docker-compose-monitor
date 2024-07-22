@@ -1,6 +1,16 @@
 # Docker Monitor
 This cli application can be used to monitor and alert the user about any failures
 
+## Installation
+For a source install use:
+```shell
+pip3 install .
+```
+To use the latest main:
+```shell
+pip3 install --upgrade git+https://github.com/crunchy234/docker-compose-monitor.git
+```
+
 ## Help menu
 ```shell
 dockermon --help
