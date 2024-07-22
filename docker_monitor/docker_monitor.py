@@ -131,11 +131,10 @@ def monitor(config: DockerMonitorOptions) -> int:
         print(f"Please ensure your docker daemon is running and connectable through {config.docker_base_url}")
         return 1
     try:
+        container_stats = {}
         while True:
             containers = client.containers.list(all=True,
                                                 filters={"label": f"com.docker.compose.project={config.compose_name}"})
-
-            container_stats = {}
 
             for container in containers:
                 current_stats = container_stats.get(container.name,
